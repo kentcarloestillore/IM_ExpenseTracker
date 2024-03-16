@@ -3,25 +3,28 @@ import { onMounted, ref } from 'vue'
 import db from './firebase/config.js'
 import { collection, query, getDocs, setDoc, doc, onSnapshot, addDoc, deleteDoc} from 'firebase/firestore'
 
-
+const total = ref(0);
 const expenses = ref([]);
 const date = ref(null);
-const isEditing = ref(false)
+const isEditing = ref(false);
 const expenseId = ref(null);
 
-const getExpense = async ()=>{
-  onSnapshot(collection(db, 'expenses'), (querySnap) =>{
-    const tmp = []
-    querySnap.forEach((doc)=>{
+const getExpense = async () => {
+  onSnapshot(collection(db, 'expenses'), (querySnap) => {
+    let tempTotal = 0;
+    const tmp = [];
+    querySnap.forEach((doc) => {
       const expense = {
         id: doc.id,
         data: doc.data()
-      }
-      tmp.push(expense)
-    })
-    expenses.value = tmp
-  })
-}
+      };
+      tempTotal += parseFloat(expense.data.amount);
+      tmp.push(expense);
+    });
+    total.value = tempTotal.toFixed(2); 
+    expenses.value = tmp;
+  });
+};
 
 const addExpense = async () => {
   if (!description.value || !category.value || !amount.value) {
@@ -162,12 +165,9 @@ onMounted(()=>{
         </table>
       </div>
     </div>
+    <h1 class="text-end text-2xl pr-4 font-bold">Total: ₱<span class="underline text-2xl pr-4 font-bold">{{ total }}</span></h1>
   </div>
 </template>
-
-<style scoped>
-
-</style>
 
 
 
